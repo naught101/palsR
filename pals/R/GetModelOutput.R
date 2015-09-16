@@ -200,6 +200,9 @@ GetLatLon = function(mfid){
 				latlon = list(err=TRUE,errtext=errtext)
 				return(latlon)
 			}
+		} else { # 1D latitude variable
+			lat = ncvar_get(mfid,lat_det[[1]][['Name']][exists_lat$index]) # get lat data
+			latlen = length(unique(as.vector(lat))) # i.e. the number of unique latitude values
 		}
 	}
 	
@@ -231,6 +234,9 @@ GetLatLon = function(mfid){
 				latlon = list(err=TRUE,errtext=errtext)
 				return(latlon)
 			}
+		} else { # 1D latitude variable
+			lon = ncvar_get(mfid,lon_det[[1]][['Name']][exists_lon$index]) # get lon data
+			lonlen = length(unique(as.vector(lon))) # i.e. the number of unique longitude values
 		}
 	}
 	# Return result:
