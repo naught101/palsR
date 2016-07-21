@@ -24,7 +24,7 @@ AnalysisList = list()
 ctr = 0
 for(v in 1:length(vars)){
 	# Get first file of first DataSet:
-	obs = GetFluxnetVariable(vars[[v]],DataSetInfo$unit[[1]]$name,DataSetInfo$unit[[1]]$filepaths[1])
+	obs = GetFluxnetVariable(vars[[v]],DataSetInfo$unit[[1]]$name,DataSetInfo$unit[[1]]$filepaths[2])
 	# Get all files for first ModelOutput:
     model = GetModelOutput(vars[[v]],ModelOutputInfo$unit[[1]]$name,ModelOutputInfo$unit[[1]]$filepaths)
     # Get all files for all user-nominated benchmarks:

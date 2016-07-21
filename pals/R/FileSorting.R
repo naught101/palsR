@@ -20,7 +20,7 @@ FindFileTypes = function(files,requestedtype){
         	# Add unit number to vector of unit numbers for appropriate files:
         	fileunitnumbers[ctr] = as.integer(file[['number']])
         	# Check if current file is first in a new unit (e.g. new MO)
-        	if(unitctr != length(unique(fileunitnumbers))){
+        	if(unitctr != length(unique(fileunitnumbers))){ # i.e. new DS/MO/Bench
         		unitctr = unitctr + 1
         		unitinfo[[unitctr]] = list(filepaths=c(file[['path']]), name=file[['name']], 
         			number=file[['number']])

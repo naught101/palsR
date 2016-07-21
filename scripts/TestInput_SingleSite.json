@@ -19,7 +19,7 @@
            "type" : "DataSet", 
            "path" : "TestDSMet_SingleSite.nc",
            "mimetype" : "application/x-netcdf", 
-		     "number" : "2", 
+		     "number" : "1", 
 	       "name" : "ELSaler2Fluxnet1.4"
        },
        {
