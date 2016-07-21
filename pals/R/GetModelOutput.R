@@ -3,7 +3,7 @@
 # Reads a variable from model output netcdf file
 # Gab Abramowitz UNSW 2014 (palshelp at gmail dot com)
 #
-GetModelOutput = function(variable,filelist,forcegrid='no'){
+GetModelOutput = function(variable,name,filepaths,forcegrid='no'){
 	library(ncdf4) # load netcdf library
 	errtext='ok'
 	
@@ -12,26 +12,26 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 	
 	# First check that each file exists, contains the variable we want, has known units,
 	# and known timing structure:
-	for(f in 1:length(filelist)){ # For each file of this MO:
+	for(f in 1:length(filepaths)){ # For each file of this MO:
 		# Check file exists:
-		if(!file.exists(filelist[[f]][['path']])){
-			errtext = paste('Model output file',filelist[[f]][['path']],'does not exist.')
+		if(!file.exists(filepaths[f])){
+			errtext = paste('Model output file',filepaths[f],'does not exist.')
 			model=list(errtext=errtext,err=TRUE)
 			return(model)	
 		}
 		# Open model output file
-		mfid[[f]]=nc_open(filelist[[f]][['path']],write=FALSE,readunlim=FALSE)
+		mfid[[f]]=nc_open(filepaths[f],write=FALSE,readunlim=FALSE)
 		# Check that requested variable exists:
 		exists = AnyNcvarExists(mfid[[f]],variable[['Name']])
 		if( ! exists$var){
 			errtext = paste('Requested variable',variable[['Name']][1],
-				'does not appear to exist in Model Ouput:', filelist[[f]][['name']])
+				'does not appear to exist in Model Ouput:', name)
 			model=list(errtext=errtext,err=TRUE)
 			mfid = lapply(mfid, nc_close)
 			return(model)
 		}
 		# Check variable units are known:
-		units = CheckNcvarUnits(mfid[[f]],variable[['Name']][exists$index],variable,filelist[[f]][['path']])
+		units = CheckNcvarUnits(mfid[[f]],variable[['Name']][exists$index],variable,filepaths[f])
 		# If units issue, return error:
 		if(units$err){
 			model=list(errtext=units$errtext,err=TRUE)
@@ -59,7 +59,7 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 	allintervals = c()
 	alltsteps = c()
 	allyear = c()
-	for(f in 1:length(filelist)){
+	for(f in 1:length(filepaths)){
 		allintervals[f] = modeltiming[[f]]$interval
 		alltsteps[f] = modeltiming[[f]]$tsteps
 		allyear[f] = modeltiming[[f]]$syear
@@ -67,7 +67,7 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 	########### Monthly data in one year files ####################
 	if((all(allintervals == 'monthly')) && (all(alltsteps == 12))){		
 		# i.e. all are monthly data in year length files
-		nyears = length(filelist)
+		nyears = length(filepaths)
 		ntsteps = 12 * nyears # total number of time steps
 		
 		# Check that MO files don't repeat years:
@@ -96,7 +96,7 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 		}
 		
 		# Get data:
-		for(f in 1:length(filelist)){ # For each file sent by js
+		for(f in 1:length(filepaths)){ # For each file sent by js
 			vdata[,,((f-1)*12+1) : ((f-1)*12+12)] = ncvar_get(mfid[[ fileorder[f] ]],variable[['Name']][exists$index])
 		}
 		# Create model timing list to reflect aggregated data:
@@ -106,7 +106,7 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 	########### Model time step data with same number of time steps in each file ####################
 	}else if((all(allintervals == 'timestep')) && (all(alltsteps == alltsteps[1]))){
 		# i.e. all are per time step data with the same number of time steps in each file
-		ntsteps = alltsteps[1] * length(filelist) # total number of time steps
+		ntsteps = alltsteps[1] * length(filepaths) # total number of time steps
 		tsteps1 = alltsteps[1]
 		
 		# Allocate space for data:
@@ -115,7 +115,7 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 		fileorder = order(allyear)
 		# Get data:
 		if(mfid[[1]]$var[[exists$index]]$name=='FCEV'){ # lat heat in CLM has 3 components
-			for(f in 1:length(filelist)){ # For each file sent by js
+			for(f in 1:length(filepaths)){ # For each file sent by js
 				vdata[,,((f-1)*tsteps1+1) : ((f-1)*tsteps1+tsteps1)] = 
 					ncvar_get(mfid[[ fileorder[f] ]],'FCEV')
 				vdata[,,((f-1)*tsteps1+1) : ((f-1)*tsteps1+tsteps1)] = 
@@ -126,7 +126,7 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 					ncvar_get(mfid[[ fileorder[f] ]],'FGEV')
 			}
 		}else{
-			for(f in 1:length(filelist)){ # For each file sent by js
+			for(f in 1:length(filepaths)){ # For each file sent by js
 				vdata_tmp = ncvar_get(mfid[[ fileorder[f] ]],variable[['Name']][exists$index],collapse_degen=FALSE)
 
 				if ((variable[['Name']][1]=='NEE') & (length(vdata_tmp) != (ntsteps*grid$lonlen*grid$latlen))) {
@@ -136,7 +136,7 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 				}
 				if(length(vdata_tmp) != (ntsteps*grid$lonlen*grid$latlen)){
 					errtext = paste('Requested variable',variable[['Name']][1],
-							'has more dimensions than expected in Model Ouput:', filelist[[f]][['name']])
+							'has more dimensions than expected in Model Ouput:', name)
 					model = list(err=TRUE,errtext=errtext)
 					mfid = lapply(mfid, nc_close)
 					return(model)
@@ -167,43 +167,38 @@ GetModelOutput = function(variable,filelist,forcegrid='no'){
 	# If not equal to requested grid structure (if forcegrid != 'no'), reshape data here
 	
 	# Create list to return from function:	
-	model=list(data=vdata,timing = modeltimingall,name=filelist[[1]]$name,grid=grid,
+	model=list(data=vdata,timing = modeltimingall,name=name,grid=grid,
 		err=FALSE,errtext=errtext)
 	return(model)
 }
 
-GetBenchmarks = function(variable,BenchmarkFiles,BenchInfo){
+GetBenchmarks = function(variable,BenchmarkInfo){
 	# Collects the model outputs that form benchmark simulations as a list
 	errtext = 'ok'
 	bench = list() # initialise benchmark data llist
-	if(BenchInfo$number > 0){
+	if(BenchmarkInfo$number > 0){
 		# Save for nBench$number positions in list for benchmark data;
 		# they'll be filled shortly:
-		for(b in 1:BenchInfo$number){
+		for(b in 1:BenchmarkInfo$number){
 			bench[[b]] = 0
 		}
-    	bench[['exist']] = TRUE
-    	bench[['howmany']] = 0
-    	bench[['index']] = c()
-    	bench[['errtext']] = ' '
-    	for(b in 1:BenchInfo$number){
-    		bench[['howmany']] = bench[['howmany']] + 1
-    		# Select those files in file list that correspond to benchmark 'b'
-    		thisbenchfiles = list()
-    		for(f in 1:length(BenchInfo$benchfiles[[b]])){
-    			thisbenchfiles[[f]] = BenchmarkFiles[[ BenchInfo$benchfiles[[b]][f] ]]
-    		}
-	    	bench[[b]] = GetModelOutput(variable,thisbenchfiles)	    	
-	    	if(bench[[b]]$err){ # i.e. there was an error of some sort retrieving benchmark
-	    		# Add to this benchamrk's errtext field - note it's a benchmark:
-	    		bench[[b]]$errtext = paste('Benchmark error: ',bench[[b]]$errtext,sep='')
-	    		bench[['errtext']] = paste(bench[['errtext']],'Benchmark ',b,': ',bench[[b]]$errtext,sep='')
-	    		# decrease the number of benchmarks available for this variable:
-	    		bench[['howmany']] = bench[['howmany']] - 1
-	    	}else{
-	    		# Note which benchmarks didn't fail:
-	    		bench[['index']] = c(bench[['index']],b)
-	    	}	
+	    	bench[['exist']] = TRUE
+	    	bench[['howmany']] = 0 # number that have no errors
+	    	bench[['index']] = c()
+	    	bench[['errtext']] = ' '
+	    	for(b in 1:BenchmarkInfo$number){
+	    		bench[['howmany']] = bench[['howmany']] + 1
+		    	bench[[b]] = GetModelOutput(variable,BenchmarkInfo$unit[[b]]$name,BenchmarkInfo$unit[[b]]$filepaths)
+		    	if(bench[[b]]$err){ # i.e. there was an error of some sort retrieving benchmark
+		    		# Add to this benchamrk's errtext field - note it's a benchmark:
+		    		bench[[b]]$errtext = paste('Benchmark error: ',bench[[b]]$errtext,sep='')
+		    		bench[['errtext']] = paste(bench[['errtext']],'Benchmark ',b,': ',bench[[b]]$errtext,sep='')
+		    		# decrease the number of benchmarks available for this variable:
+		    		bench[['howmany']] = bench[['howmany']] - 1
+		    	}else{
+		    		# Note which benchmarks didn't fail:
+		    		bench[['index']] = c(bench[['index']],b)
+		    	}	
 	    }
 	    # If reading of all benchmarks failed, note that there are none:
 	    if(bench[['howmany']] == 0){
@@ -213,6 +208,7 @@ GetBenchmarks = function(variable,BenchmarkFiles,BenchInfo){
 		bench[['exist']] = FALSE
 		bench[['howmany']] = 0
 		bench[['errtext']] = 'No user nominated benchmarks.'
+		bench[['err']] = TRUE
 	}
 	return(bench)
 }

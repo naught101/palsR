@@ -1,7 +1,90 @@
 # 2DMetrics.R
 #
-# Gab Abramowitz, UNSW, 2015, gabsun at gmail dot com
+# Gab Abramowitz, UNSW, 2016, gabsun at gmail dot com
 #
+absoluteMetric = c('TimeMean','TimeSD')
+relativeMetric = c('TimeRMSE','TimeCor')
+
+SinglePlotValues = function(Analysis,mask,region,plotdata,cluster){
+	# Calculate values to plot, as well as metrics, for a single analysis
+	metrics = list()
+	# Number of comparables - e.g. just DS (=1)? DS and bench (=2)?
+	comparables = length(plotdata)
+	######### TIME MEAN ############
+	if(Analysis$type == 'TimeMean'){
+		if(comparables == 1){
+			plotvalues = TimeMean(plotdata[[1]],cluster) * mask
+			metrics[[1]] = list(name='TimeSpaceMean',value=mean(plotvalues,na.rm=TRUE))
+		}else if(comparables == 2){
+			pv = lapply(plotdata,TimeMean,cluster)
+			# ASSUME two comparables is a request for the difference between them
+			plotvalues = ( pv[[2]] - pv[[1]] ) * mask
+			metrics[[1]] = list(name='TimeSpaceBias',value=mean(plotvalues,na.rm=TRUE))
+		}else{
+			result = list(plotvalues=NA, plotden=NA, metrics=list(NA),err=TRUE,
+				errtext='Request to apply TimeMean to 3 products...')
+			return(result)
+		}
+	############ TIME SD ##############
+	}else if(Analysis$type == 'TimeSD'){
+		if(comparables == 1){
+			plotvalues = TimeSD(plotdata[[1]],cluster) * mask
+			metrics[[1]] = list(name='TimeSDMean',value=mean(plotvalues,na.rm=TRUE))
+		}else if(comparables == 2){
+			pv = lapply(plotdata,TimeSD,cluster)
+			# ASSUME two comparables is a request for the difference between them
+			plotvalues = ( pv[[2]] - pv[[1]] ) * mask
+			metrics[[1]] = list(name='TimeSDBias',value=mean(plotvalues,na.rm=TRUE))
+		}else{
+			result = list(plotvalues=NA, plotden=NA, metrics=list(NA),err=TRUE,
+				errtext='Request to apply TimeSD to 3 products...')
+			return(result)
+		}
+	############# TIME RMSE ##############
+	}else if(Analysis$type == 'TimeRMSE'){
+		if(comparables == 2){
+			plotvalues = TimeRMSE(plotdata[[1]],plotdata[[2]],cluster) * mask
+			metrics[[1]] = list(name='TimeSpaceRMSE',value=mean(plotvalues,na.rm=TRUE))
+		}else if(comparables == 3){
+			# ASSUME 3 comparables is a request for the difference between 
+			# 1-2RMSE and 1-3RMSE:
+			pv1 = TimeRMSE(plotdata[[1]],plotdata[[2]],cluster)
+			pv2 = TimeRMSE(plotdata[[1]],plotdata[[3]],cluster)
+			plotvalues = ( pv1 - pv2 ) * mask
+			metrics[[1]] = list(name='MeanTimeRMSEdiff',value=mean(plotvalues,na.rm=TRUE))
+		}else{
+			result = list(plotvalues=NA, plotden=NA, metrics=list(NA),err=TRUE,
+				errtext='Request to apply TimeRMSE to 1 or >3 products...')
+			return(result)
+		}
+	############# TIME Cor ##############
+	}else if(Analysis$type == 'TimeCor'){
+		if(comparables == 2){
+			plotvalues = TimeCor(plotdata[[1]],plotdata[[2]],cluster) * mask
+			TimeSpaceCor = cor(as.vector(plotdata[[1]]),as.vector(plotdata[[2]]))
+			metrics[[1]] = list(name='TimeSpaceCor',value=TimeSpaceCor)
+			metrics[[2]] = list(name='MeanTimeCor',value=mean(plotvalues,na.rm=TRUE))
+		}else if(comparables == 3){
+			# ASSUME 3 comparables is a request for the difference between 
+			# 1-2RMSE and 1-3RMSE:
+			pv1 = TimeCor(plotdata[[1]],plotdata[[2]],cluster)
+			pv2 = TimeCor(plotdata[[1]],plotdata[[3]],cluster)
+			plotvalues = ( pv1 - pv2 ) * mask
+			metrics[[1]] = list(name='MeanTimeCorDiff',value=mean(plotvalues,na.rm=TRUE))
+		}else{
+			result = list(plotvalues=NA, plotden=NA, metrics=list(NA),err=TRUE,
+				errtext='Request to apply TimeCor to 1 or >3 products...')
+			return(result)
+		}
+	}
+	plotden = density(plotvalues,na.rm=TRUE)
+	plotmean = mean(plotvalues,na.rm=TRUE)
+	plotsd = sd(plotvalues,na.rm=TRUE)
+	result = list(plotvalues=plotvalues,plotden=plotden,plotmean=plotmean,plotsd=plotsd,
+		metrics=metrics,err=FALSE,errtext='ok')
+	return(result)
+}
+
 TimeMeanAll = function(model,obs,bench,variable,plottype,cl){
 	# Calculates time means for each grid point in obs, model and benchmark data  
 	metrics = list()

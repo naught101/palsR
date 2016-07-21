@@ -2,9 +2,10 @@
 #
 # Gab Abramowitz, UNSW, 2014, gabsun at gmail dot com
 #
-# Calculates a vector of grid cell surface areas based 
-# on observed data mask.
+
 GridAreaVector = function(obs,mcount){
+	# Calculates a vector of grid cell surface areas based 
+	# on observed data mask.
 	source('~/results/indep_application/functions/EarthArea.R')
 	area = EarthArea(obs) # get surface area of grid cells
 	cat('Creating gridcell surface area vector')
@@ -35,8 +36,8 @@ GridAreaVector = function(obs,mcount){
 }
 #
 #
-# Calculates surface area of Earth and grid cells:
 EarthArea = function(obs){
+	# Calculates surface area of Earth and grid cells:
 	cellwidth =  obs$grid$lat[2] - obs$grid$lat[1] # assume n degree by n degree
 	earthradius=6371
 	earth = 4*pi*earthradius^2
@@ -54,6 +55,53 @@ EarthArea = function(obs){
 	return(list(cell=cell,earth=earth))
 }
 #
+CreateCommonMask = function(obs,models,bench,UserMOonly=TRUE){
+ 	# Given a collection of NA-based masks from diffrerent observational products
+ 	# and/or model outputs, this creates a mask which is the intersection on non-NA values.
+ 	
+	# First collect all obs (DataSet) masks:
+    mask_obs = list()
+    for(i in 1:length(obs)){
+      mask_obs[[i]] = array(NA,dim=dim(obs[[i]]$data[,,1])) # NA values        -> NA
+      mask_obs[[i]][which(!is.na(obs[[i]]$data[,,1]))] = 1  # values available -> 1
+    } 
+  	# Then all ModelOutput masks:
+ 	if(UserMOonly){
+  		nmodels = 1 # restrict mask to triggering MO
+  	}else{
+  		nmodels = length(models)
+  	}
+    mask_model=list()
+    for(j in 1:nmodels){
+      mask_model[[j]] = array(NA,dim=dim(models[[j]]$data[,,1])) # NA values        -> NA 
+      mask_model[[j]][which(!is.na(models[[j]]$data[,,1]))] = 1  # values available -> 1
+    }
+	# Then all Benchmark masks
+  	if(bench$exist){
+    	mask_bench = list()
+    	for(b in 1:bench$howmany){
+    	  mask_bench[[b]] = array(NA,dim=dim(bench[[b]]$data[,,1])) # NA values        -> NA
+    	  mask_bench[[b]][which(!is.na(bench[[b]]$data[,,1]))] = 1  # values available -> 1
+   		}    
+ 	}
+  	# Combine masks:
+  	mask = mask_model[[1]]
+  	if(nmodels > 1){
+  		for(m in 2:nmodels){
+	  		mask = mask*mask_model[[m]]
+  		}
+  	}
+  	for(o in 1:length(obs)){
+  		mask = mask*mask_obs[[o]]	
+  	}
+  	if(bench$exist){
+  		for(b in 1:bench$howmany){
+	  		mask = mask*mask_bench[[b]]
+  		}
+  	}
+    return(mask) 
+}
+
 # Interpolates from one lat-lon global 2D grid to another
 # using area weighted averaging
 interpolate_areaweight=function(data_in,lat_centre_out,lon_centre_out,global=TRUE){

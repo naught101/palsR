@@ -5,6 +5,10 @@
 zeroC = 273.15
 SprdMissingVal=-9999 # missing value in spreadsheet
 NcMissingVal=-9999 # missing value in created netcdf files
+QCmeasured = 1
+QCnotmeasured = 0
+QCmissing = NcMissingVal
+
 CurrentTemplateVersion = '1.0.2'
 KnownTemplateVersions = c('1.0.1','1.0.2')
 #

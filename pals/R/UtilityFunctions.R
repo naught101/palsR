@@ -25,6 +25,23 @@ CheckIfAllFailed = function(outinfo){
 	}
 	return(allfail)
 }
+PrintAnalysisResult = function(output){
+	# Just prints info about each analysis run from a Master Analysis Script
+	for(i in 1: length(output[["files"]])){
+		cat('Output ',i,':')
+		cat('  type:',output[["files"]][[i]]$type,'\n')
+		if(!is.null(output[["files"]][[i]]$error)){
+			cat('  ERROR: ',output[["files"]][[i]]$error,'\n')
+		}else{
+			cat('  filename:',output[["files"]][[i]]$filename,'\n')
+			cat('  bench error:',output[["files"]][[i]]$bencherror,'\n')
+			cat('  first metric for model - ',output[["files"]][[i]]$metrics[[1]]$name,':',
+				output[["files"]][[i]]$metrics[[1]]$model_value,'\n')
+		}
+	}
+	
+}
+
 LegendText = function(data,plotobs=TRUE){
 	# Returns text vector of legend names for a plot.
 	# If no obs line in the plot (e.g. error plot), first index will be model, else obs
@@ -77,42 +94,6 @@ CheckVersionCompatibility = function(filepath1,filepath2){
 		#	'file and benchmark file is different:',
 		#	DsetVer1$value,DsetVer2$value))
 	}
-}
-
-BenchmarkInfo = function(BenchmarkFiles,Bctr){
-	# Determines the number of user nominated benchmarks in a call to an 
-	# experiment script, as well as the number of files associated with each.
-	# Bctr - total number of benchmark files
-	# BenchmarkFiles - contains data for each file
-	# nBench - number of user nominated benchmarks
-	# nBenchfiles - a list of vectors of file indices for each benchmark
-	if(Bctr == 0){ # no benchmark files sent by javascript
-		nBench = 0
-		nBenchfiles = NA
-		benchnames = NA
-	}else{
-		nBench = 1
-		# Determine number of user nominated benchmarks, and the name of each:
-		benchnames = c()
-		for(b in 1:Bctr){
-			nBench = max(nBench, as.integer(BenchmarkFiles[[b]]$number))
-			benchnames[as.integer(BenchmarkFiles[[b]]$number)] = BenchmarkFiles[[b]]$name
-		}
-		# Store which files belong to which benchmark:
-		nBenchfiles = list()
-		bexists = c(0)
-		for(b in 1:Bctr){
-			benchnumber = as.integer(BenchmarkFiles[[b]]$number)
-			if(any(bexists == benchnumber)){
-				nBenchfiles[[benchnumber]] = c(nBenchfiles[[benchnumber]] , b)
-			}else{
-				nBenchfiles[[benchnumber]] = c(b)
-				bexists = c(bexists,benchnumber)
-			}
-		}
-	}
-	result = list(number = nBench, benchfiles=nBenchfiles, names=benchnames)
-	return(result)
 }
 #
 # Strips path from filename: 

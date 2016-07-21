@@ -5,25 +5,29 @@
            "type" : "ModelOutput",
            "path" : "/Users/gab/data/Australia/ET/cable_output_Mark/cable_output_2002.nc",
            "mimetype" : "application/x-netcdf",
-	   "name" : "CABLEtestAus"
+	   "name" : "CABLEtestAus",
+	   "number" : "1"
        },
        {
            "type" : "ModelOutput",
            "path" : "/Users/gab/data/Australia/ET/cable_output_Mark/cable_output_2003.nc",
            "mimetype" : "application/x-netcdf",
-	   "name" : "CABLEtestAus"
+	   "name" : "CABLEtestAus",
+	   "number" : "1"
        },
        {   
            "type" : "DataSet", 
            "path" : "/Users/gab/data/Australia/ET/GLEAM_Mark/GLEAM.New_0.25deg.daily_Aust_EVAP_EVSOIL_2002.nc",
            "mimetype" : "application/x-netcdf",
-	       "name" : "GLEAM_Mark"
+	       "name" : "GLEAM_Mark",
+		   "number" : "1"
        },
        {   
            "type" : "DataSet", 
            "path" : "/Users/gab/data/Australia/ET/GLEAM_Mark/GLEAM.New_0.25deg.daily_Aust_EVAP_EVSOIL_2003.nc",
            "mimetype" : "application/x-netcdf",
-	       "name" : "GLEAM_Mark"
+	       "name" : "GLEAM_Mark",
+		   "number" : "1"
        },
        {
 	   "type" : "Benchmark", 

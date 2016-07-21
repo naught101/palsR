@@ -1,6 +1,6 @@
 # 2DPlotLayout.R
 #
-# Gab Abramowitz, UNSW, 2015, gabsun at gmail dot com
+# Gab Abramowitz, UNSW, 2016, gabsun at gmail dot com
 #
 SpatialPlotAbsolute = function(model,obs,bench,md,variable,plottype,region){
 	# Layout of plots that show obs panel, model panel, model-obs panel and 
@@ -8,10 +8,10 @@ SpatialPlotAbsolute = function(model,obs,bench,md,variable,plottype,region){
 	# Density plots are always in the lower left, mean and SD values are either bottom
 	# right <= 4 panels, or top left for > 4 panels
 	errtext = 'ok'
+	density_cut = 1/200 # truncate denisty plot x-axis at this fraction of max y value 
 	varname = variable[['Name']][1]
 	unitstxt = variable[['UnitsText']]
 	longvarname = variable[['PlotName']]
-	density_cut = 1/200 # truncate denisty plot x-axis at this fraction of max y value 
 	npanels = bench$howmany + 3 # Number of map panels in plot
 	
 	# Plot layout:
@@ -143,6 +143,34 @@ SpatialPlotRelative = function(model,obs,bench,md,variable,plottype,region){
 		
 	result = list(errtext=errtext,err=FALSE,metrics=md$metrics)
 	return(result)
+}
+
+FindCommonRanges = function(AnalysisList){
+	# For each plot group (i.e. plots that we want to directly compare), find an appropriate 
+	# shared range of values for the legend and density inset plots.
+	density_cut = 1/200 # truncate denisty plot x-axis at this fraction of max y value 
+	pgrange = list() # ranges for each plot group
+	pgden = list() # densities for each plot group
+	knownplotgroups = c()
+	pgctr = list() # counter for plots in a plot group
+	for(a in 1:length(AnalysisList)){ # cycle over all analyses
+		if(! any(knownplotgroups==AnalysisList[[a]]$plotgroup)){ # i.e. this analysis is the first in a new plot group
+			knownplotgroups = c(knownplotgroups,AnalysisList[[a]]$plotgroup)
+			pgrange[[AnalysisList[[a]]$plotgroup]] = list( range = c( min(AnalysisList[[a]]$metrics$plotvalues,na.rm=TRUE), 
+					max(AnalysisList[[a]]$metrics$plotvalues,na.rm=TRUE) ), diffplot = AnalysisList[[a]]$Difference,
+					drange = DensityXrange(list(AnalysisList[[a]]$metrics$plotden),density_cut) )
+			pgden[[AnalysisList[[a]]$plotgroup]] = list(AnalysisList[[a]]$metrics$plotden)
+			pgctr[[AnalysisList[[a]]$plotgroup]] = 1
+		}else{ # analysis is in current plot group
+			pgrange[[AnalysisList[[a]]$plotgroup]]$range = 
+				c( min(AnalysisList[[a]]$metrics$plotvalues, pgrange[[AnalysisList[[a]]$plotgroup]]$range[1],na.rm=TRUE),
+				max(AnalysisList[[a]]$metrics$plotvalues, pgrange[[AnalysisList[[a]]$plotgroup]]$range[2],na.rm=TRUE) )
+			pgctr[[AnalysisList[[a]]$plotgroup]] = pgctr[[AnalysisList[[a]]$plotgroup]] + 1
+			pgden[[AnalysisList[[a]]$plotgroup]][[pgctr[[AnalysisList[[a]]$plotgroup]]]] = AnalysisList[[a]]$metrics$plotden
+			pgrange[[AnalysisList[[a]]$plotgroup]]$drange = DensityXrange(pgden[[AnalysisList[[a]]$plotgroup]],density_cut) 
+		}		
+	}
+	return(pgrange)
 }
 
 DensityXrange = function(density_list,density_cut){

@@ -1,5 +1,5 @@
 # Collates metrics from analysis script into a PNG table
-# Gab Abramowitz, UNSW, 2014 (palshelp at gmail dot com)
+# Gab Abramowitz, UNSW, 2016 (palshelp at gmail dot com)
 
 MetricTableSingleSite = function(outinfo,BenchInfo){
 	# Draws in a single image:

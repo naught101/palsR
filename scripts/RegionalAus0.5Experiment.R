@@ -1,8 +1,5 @@
-# Master script for Australian continental 0.25 x 0.25 degree experiment
+# Master script for Australian continental 0.5 x 0.5 degree experiment
 # Gab Abramowitz, UNSW, 2014 (palshelp at gmail dot com)
-
-library(pals)
-library(parallel)
 
 library(pals)
 library(parallel)
@@ -27,7 +24,7 @@ BenchmarkInfo = FindFileTypes(input[["files"]],'Benchmark')
 # NEED to read in all obs here... maybe all MOs?
 # how to handle multiple analysis variables in one MO/DS?
 obs = list(); model = list()
-obs[[1]] = GetGLEAM_Aus(vars[[1]],DataSetInfo$unit[[1]]$filepaths,force_interval='monthly')
+obs[[1]] = GetGLEAM_Aus05deg(vars[[1]],DataSetInfo$unit[[1]]$filepaths,force_interval='monthly')
 
 model[[1]] = GetModelOutput(vars[[1]],ModelOutputInfo$unit[[1]]$name,ModelOutputInfo$unit[[1]]$filepath)  
 bench = GetBenchmarks(vars[[1]],BenchmarkInfo)

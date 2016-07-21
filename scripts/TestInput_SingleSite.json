@@ -5,18 +5,21 @@
            "type" : "ModelOutput",
            "path" : "TestMO_SingleSite.nc",
            "mimetype" : "application/x-netcdf",
+		     "number" : "1",
 	   "name" : "CABLE1.4_ElSaler2"
        },
        {   
            "type" : "DataSet", 
            "path" : "TestDSFlux_SingleSite.nc",
            "mimetype" : "application/x-netcdf",
+		     "number" : "1",
 	       "name" : "ElSaler2Fluxnet1.4"
        },
        {   
            "type" : "DataSet", 
            "path" : "TestDSMet_SingleSite.nc",
-           "mimetype" : "application/x-netcdf",  
+           "mimetype" : "application/x-netcdf", 
+		     "number" : "2", 
 	       "name" : "ELSaler2Fluxnet1.4"
        },
        {
