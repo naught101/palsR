@@ -55,7 +55,7 @@ outinfo = parLapply(cl=cl,AnalysisList,DistributeSingleSiteAnalyses,data=Analysi
 stopCluster(cl)
 
 # Draw summary metric table here (adds to outinfo list):
-outinfo = MetricTableSingleSite(outinfo,BenchmarkInfo)
+#outinfo = MetricTableSingleSite(outinfo,BenchmarkInfo)
 
 # Write outinfo to output list for javascript:
 output = list(files=outinfo);

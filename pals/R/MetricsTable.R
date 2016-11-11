@@ -64,6 +64,10 @@ MetricTableSingleSite = function(outinfo,BenchInfo){
 					bench1[ctr] = NA
 					bench2[ctr] = NA
 					bench3[ctr] = NA
+					
+					
+					cat('Analysis',i,'metric',m, 'nbench:',BenchInfo$number,'\n')
+					
 					# Note that bench 1 in any given analysis in outinfo may not correspond to the user's
 					# first nominated benchmark - a relevant variable may be missing from the benchmark MO,
 					# or there may have been an error reading. The AlignBenchmarks function below deals with this:
@@ -71,10 +75,15 @@ MetricTableSingleSite = function(outinfo,BenchInfo){
 						bench1[ctr] = 
 							AlignBenchmarks(benchnames,outinfo[[i]]$benchnames,1,outinfo[[i]]$metrics[[m]]$bench_value)
 					}
+					cat('1 benchnames:','\n')
+					
 					if(BenchInfo$number >= 2){
 						bench2[ctr] = 
 							AlignBenchmarks(benchnames,outinfo[[i]]$benchnames,2,outinfo[[i]]$metrics[[m]]$bench_value)
 					}
+					
+					cat('2\n')
+					
 					if(BenchInfo$number >= 3){
 						bench3[ctr] = 
 							AlignBenchmarks(benchnames,outinfo[[i]]$benchnames,3,outinfo[[i]]$metrics[[m]]$bench_value)

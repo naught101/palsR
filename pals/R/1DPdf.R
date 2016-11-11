@@ -2,7 +2,7 @@
 #
 # Plots probability density functions
 #
-# Gab Abramowitz UNSW 2014 (palshelp at gmail dot com)
+# Gab Abramowitz UNSW 2016 (palshelp at gmail dot com)
 
 PALSPdf = function(obslabel,pdfdata,varname,xtext,legendtext,timing,
 	nbins=500,plotcolours,modlabel='no',vqcdata=matrix(-1,nrow=1,ncol=1)){
@@ -22,7 +22,7 @@ PALSPdf = function(obslabel,pdfdata,varname,xtext,legendtext,timing,
 	ymax = max(heights[1,])
 	if(vqcdata[1,1] != -1){
 		qcden = density(pdfdata[as.logical(vqcdata[,1]),1],from=xmin,to=xmax,n=nbins)
-		ymax = max(ymax,qcden[[1]][[2]])
+		ymax = max(ymax,qcden[[2]])
 	}
 	# Find highest density value:
 	if(ncurves>1){

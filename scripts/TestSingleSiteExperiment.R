@@ -1,5 +1,5 @@
 library("RJSONIO")
-inputFile <- "TestInput_SingleSite.json"
+inputFile <- "/Users/gab/Documents/admin/PALS/testing/Danny/TestInput_SingleSite.json"
 input <- fromJSON(paste(readLines(inputFile), collapse=""));
 Rruntime = system.time(source("SingleSiteExperiment.R"))
 print(paste('Time to run:',Rruntime[3]))
