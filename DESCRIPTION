@@ -6,3 +6,5 @@ Maintainer: Gab Abramowitz <palshelp@gmail.com>
 Description: R analysis scripts for PALS project
 License: 
 Packaged: 2016-02-18 07:03:33 UTC; gab
+Suggests:
+    plotrix
