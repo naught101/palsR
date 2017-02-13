@@ -1573,7 +1573,7 @@ GetMPI_uncertainty_Global = function(variable,filelist,force_interval='no',dsetv
 
 GetHadCRUT = function(dsetversion,years,missing_threshold){
 	cat(paste('Loading HadCRUT version',dsetversion,' \n'))
-	library(ncdf) # load packages
+	library(ncdf4) # load packages
 	source('~/results/indep_application/functions/missing_data.R')
 	remove_missing = TRUE
 	if(missing_threshold==100){remove_missing = FALSE}
@@ -1591,21 +1591,21 @@ GetHadCRUT = function(dsetversion,years,missing_threshold){
 	smonth = (years[1]-1850)*12 + 1
 	# Cacluate number of years
 	nyears = years[2]-years[1] + 1
-	mn=open.ncdf(meanfile,readunlim=FALSE) # open global mean temp file
-	an=open.ncdf(anfile,readunlim=FALSE) # open global anomaly temp file
+	mn=nc_open(meanfile,readunlim=FALSE) # open global mean temp file
+	an=nc_open(anfile,readunlim=FALSE) # open global anomaly temp file
 	# Meantemp is of dimension 72 (lon) by 36 (lat) by 12 (month)
-	meantemp=get.var.ncdf(mn,'tem')   # read mean temp data
+	meantemp=ncvar_get(mn,'tem')   # read mean temp data
 	# Read anomaly temp data for 1970-1999:
 	if(dsetversion==3){
-		anomtemp=get.var.ncdf(an,'temp',start=c(1,1,1,smonth),count=c(72,36,1,mcount))
+		anomtemp=ncvar_get(an,'temp',start=c(1,1,1,smonth),count=c(72,36,1,mcount))
 	}else if(dsetversion==4){
-		anomtemp=get.var.ncdf(an,'temperature_anomaly',start=c(1,1,smonth),count=c(72,36,mcount))
+		anomtemp=ncvar_get(an,'temperature_anomaly',start=c(1,1,smonth),count=c(72,36,mcount))
 	}
-	lat=get.var.ncdf(mn,'lat')   # read latitude values
-	lon=get.var.ncdf(mn,'lon')   # read longitude values
+	lat=ncvar_get(mn,'lat')   # read latitude values
+	lon=ncvar_get(mn,'lon')   # read longitude values
 	# Close observed data netcdf files:
-	close.ncdf(mn)
-	close.ncdf(an)
+	nc_close(mn)
+	nc_close(an)
 	# Reverse latitude order of mean temp for plotting:
 	meantemp = meantemp[,length(meantemp[1,,1]):1,]
 	# DO NOT reverse for anomaly variable - opposite latitude order
