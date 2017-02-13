@@ -8,7 +8,7 @@
 # Gab Abramowitz CCRC, UNSW 2014 (palshelp at gmail dot com)
 #
 AnnualCycle = function(obslabel,acdata,varname,ytext,legendtext,
-	timestepsize,whole,plotcolours,modlabel='no'){
+	timestepsize,whole,plotcolours,modlabel='no',na.rm=FALSE){
 	######
 	errtext = 'ok'
 	metrics = list()
@@ -31,26 +31,31 @@ AnnualCycle = function(obslabel,acdata,varname,ytext,legendtext,
 		avday=c() # initialise
 		# Transform data into daily averages:
 		for(i in 1:ndays){
-			avday[i]=mean(data_days[i,]) # calc daily average value
+			avday[i]=mean(data_days[i,],na.rm=na.rm) # calc daily average value
 		}	
 		# Transform daily means into monthly means:
 		for(m in 1:12){ # for each month
 			data_month=0 # initialise
+      days_missing=0 #initialise
 			for(k in 1:nyears){ # for each year of data set
 				# Add all daily averages for a given month
 				# over all data set years:
 				data_month = data_month + 
 					sum(avday[(month$start[m]+(k-1)*365):
-					(month$start[m+1]-1 +(k-1)*365) ] )
+					(month$start[m+1]-1 +(k-1)*365) ], na.rm=na.rm)
+        #Number of missing time steps
+        days_missing = days_missing +
+          sum(is.na(avday[(month$start[m]+(k-1)*365):
+                               (month$start[m+1]-1 +(k-1)*365) ]))
 			}
-			# Then divide by the total number of days added above:
-			data_monthly[m,p]=data_month/(month$length[m]*nyears)
+			# Then divide by the total number of days added above (minus missing time steps):
+			data_monthly[m,p]=data_month/(month$length[m]*nyears-days_missing)
 		}
 	}
 	xloc=c(1:12) # set location of x-coords
 	# Plot model output result:
-	yaxmin=min(data_monthly) # y axis minimum in plot
-	yaxmax=max(data_monthly)+0.18*(max(data_monthly)-yaxmin) # y axis maximum in plot
+	yaxmin=min(data_monthly,na.rm=na.rm) # y axis minimum in plot
+	yaxmax=max(data_monthly,na.rm=na.rm)+0.18*(max(data_monthly,na.rm=na.rm)-yaxmin) # y axis maximum in plot
 	plot(xloc,data_monthly[,1],type="l",xaxt="n",xlab='Month',ylab=ytext,
 		lwd=3,col=plotcolours[1],ylim=c(yaxmin,yaxmax),cex.lab=1.2,cex.axis=1.3,
 		mgp = c(2.5,0.8,0))
@@ -90,6 +95,15 @@ AnnualCycle = function(obslabel,acdata,varname,ytext,legendtext,
 				bench_value=list(bench1=pscore[2],bench2=pscore[3],bench3=pscore[4]))
 		}
 	}
+  #Print percentage of data missing if na.rm=TRUE and some data missing
+  if(na.rm){
+    perc_missing = round(sapply(1:ncol(acdata), function(x) #round
+      sum(is.na(acdata[,x]))/length(acdata[,x])), digits=3)      
+    if(any(perc_missing > 0)){
+      text(1,yaxmax, paste("(",paste(perc_missing,collapse=", "), ")% data missing", sep=""),
+           pos=4,offset=1, col="red")
+    }
+  }
 	result=list(err=FALSE,errtext=errtext,metrics=metrics)
 	return(result)
 } # End function AnnualCycle
