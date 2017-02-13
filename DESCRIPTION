@@ -7,18 +7,18 @@ Description: R analysis scripts for PALS project
 License: 
 Packaged: 2016-02-18 07:03:33 UTC; gab
 Imports:
-    RColorBrewer
-    RJSONIO
-    boot
-    colorRamps
-    colorspace
-    fields
-    gdata
-    mapdata
-    maps
-    ncdf
-    ncdf4
-    parallel
-    plotrix
-    stringr
+    RColorBrewer,
+    RJSONIO,
+    boot,
+    colorRamps,
+    colorspace,
+    fields,
+    gdata,
+    mapdata,
+    maps,
+    ncdf,
+    ncdf4,
+    parallel,
+    plotrix,
+    stringr,
     zoom
