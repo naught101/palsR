@@ -110,7 +110,7 @@ GenerateEmpBenchmark = function(TrainPathsMet,TrainPathsFlux,PredictPathMet,Pred
 
 TrainEmpModel = function(nsites,infiles,xvarnames,yvarname,
 	eparam,emod='kmeans',removeflagged=TRUE){
-	library(ncdf) # load netcdf library
+	library(ncdf4) # load netcdf library
 	if(length(infiles) != nsites){ # different # sites and files
 		# Assume separate met and flux files:
 		metfiles = 	infiles[1:nsites]
@@ -126,14 +126,14 @@ TrainEmpModel = function(nsites,infiles,xvarnames,yvarname,
 	ectr = 1
 	for(s in 1:nsites){
 		exists_var = FALSE # initialise
-		fid = open.ncdf(fluxfiles[s])
+		fid = nc_open(fluxfiles[s])
 		for (v in 1:fid$nvars){ # Search through all variables in netcdf file
 			if(fid$var[[v]]$name==yvarname){
 				exists_var=TRUE
 				break
 			}
 		}
-		close.ncdf(fid)
+		nc_close(fid)
 		if(! exists_var){
 			siteexclude[ectr] = s
 			all_sites = FALSE
@@ -171,9 +171,9 @@ TrainEmpModel = function(nsites,infiles,xvarnames,yvarname,
 	dstart = c() # index in all data vector of data set start
 	dend = c() # index in all data vector of data set end
 	for(s in 1:nsites){
-		fid = open.ncdf(metfiles[s])
+		fid = nc_open(metfiles[s])
 		timing = GetTimingNcfile(fid) # in PALS package
-		close.ncdf(fid)
+		nc_close(fid)
 		dstart[s] = ntsteps + 1
 		ntsteps = ntsteps + timing$tsteps
 		dend[s] = ntsteps
@@ -281,16 +281,16 @@ TrainEmpModel = function(nsites,infiles,xvarnames,yvarname,
 
 PredictEmpFlux = function(infile,xvarnames,yvarname,emod){
 	# Predicts empirically based flux for a single site.
-	library(ncdf) # load netcdf library
+	library(ncdf4) # load netcdf library
 	nxvars = length(xvarnames) # number of independent variables
 	# Check consistency of inputs to function:
 	if(nxvars != length(emod$grad[1,])){
 		CheckError('Number of dependent vars in call to EmpFlux inconsistent')
 	}
 	# Determine number of time steps in testing site data:
-	fid = open.ncdf(infile)
+	fid = nc_open(infile)
 	timing = GetTimingNcfile(fid) # in PALS package
-	close.ncdf(fid)
+	nc_close(fid)
 	ntsteps = timing$tsteps
 	yvar=c() # dependent variable
 	xvar = matrix(NA,ntsteps,nxvars) # declare x var data matrix
