@@ -16,7 +16,6 @@ Imports:
     gdata,
     mapdata,
     maps,
-    ncdf,
     ncdf4,
     parallel,
     plotrix,
