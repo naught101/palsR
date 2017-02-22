@@ -1,9 +1,9 @@
 
 build: 
-	R CMD build pals
+	R CMD build .
 
 install: 
-	R CMD INSTALL pals
+	R CMD INSTALL .
 
 clean:
 	rm -rf pals_*.tar.gz
