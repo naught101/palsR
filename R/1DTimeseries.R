@@ -28,20 +28,20 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 				data_smooth[i,p] = mean(data_days[i:(i+winsize-1),],na.rm=na.rm)
 			}
 			if(p==1){
-				yvalmin = as.character(round(min(tsdata[,p],na.rm=na.rm),3))
-				yvalmax = as.character(round(max(tsdata[,p],na.rm=na.rm),3))
-				datamean = as.character(round(mean(tsdata[,p],na.rm=na.rm),3))
-				datasd = as.character(round(sd(tsdata[,p],na.rm=na.rm),3))
+				yvalmin = as.character(signif(min(tsdata[,p],na.rm=na.rm),3))
+				yvalmax = as.character(signif(max(tsdata[,p],na.rm=na.rm),3))
+				datamean = as.character(signif(mean(tsdata[,p],na.rm=na.rm),3))
+				datasd = as.character(signif(sd(tsdata[,p],na.rm=na.rm),3))
 
 			}else{
-				yvalmin = paste(yvalmin,', ',as.character(round(min(tsdata[,p],na.rm=na.rm),3)),sep='')
-				yvalmax = paste(yvalmax,', ',as.character(round(max(tsdata[,p],na.rm=na.rm),3)),sep='')
-				datamean = paste(datamean,', ',as.character(round(mean(tsdata[,p],na.rm=na.rm),3)),sep='')
-				datasd = paste(datasd,', ',as.character(round(sd(tsdata[,p]),3),na.rm=na.rm),sep='')
+				yvalmin = paste(yvalmin,', ',as.character(signif(min(tsdata[,p],na.rm=na.rm),3)),sep='')
+				yvalmax = paste(yvalmax,', ',as.character(signif(max(tsdata[,p],na.rm=na.rm),3)),sep='')
+				datamean = paste(datamean,', ',as.character(signif(mean(tsdata[,p],na.rm=na.rm),3)),sep='')
+				datasd = paste(datasd,', ',as.character(signif(sd(tsdata[,p]),3),na.rm=na.rm),sep='')
 			}
 		}
-		ymin = round(min(data_smooth,na.rm=na.rm),3)
-		ymax = round(max(data_smooth,na.rm=na.rm),3)
+		ymin = signif(min(data_smooth,na.rm=na.rm),3)
+		ymax = signif(max(data_smooth,na.rm=na.rm),3)
 		# If we're adding a gap-filling QC line, make space for it:
 		if(vqcdata[1,1] != -1) {
 			ymin = ymin - (ymax-ymin)*0.06
@@ -140,7 +140,7 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 		}
 		#Print percentage of data missing if na.rm=TRUE and some data missing
 		if(na.rm){
-			perc_missing = round(sapply(1:ncol(tsdata), function(x) 
+			perc_missing = signif(sapply(1:ncol(tsdata), function(x) 
 						    sum(is.na(tsdata[,x]))/length(tsdata[,x])), digits=3)	   
 			if(any(perc_missing > 0)){
 				text(xmin-(xmax-xmin)*0.03,y=(ymin + (ymax-ymin)*(y_adj+0.24)),
@@ -165,10 +165,10 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 		}		
 	}else{
 		# this code not functioning but kept for future modification:
-		yvalmin = round(min(tsdata, na.rm=na.rm),3)
-		yvalmax = round(max(tsdata, na.rm=na.rm),3)
-		datamean = round(mean(tsdata[,1], na.rm=na.rm),3)
-		datasd = round(sd(tsdata[,1], na.rm=na.rm),3)
+		yvalmin = signif(min(tsdata, na.rm=na.rm),3)
+		yvalmax = signif(max(tsdata, na.rm=na.rm),3)
+		datamean = signif(mean(tsdata[,1], na.rm=na.rm),3)
+		datasd = signif(sd(tsdata[,1], na.rm=na.rm),3)
 		ymin = yvalmin
 		ymax = yvalmax
 		xmin = 1
@@ -222,7 +222,7 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 		     cex=max((plotcex*0.75),1),pos=4)
 		#Print percentage of data missing if na.rm=TRUE and some data missing
 		if(na.rm){
-		  perc_missing = round(sapply(1:ncol(tsdata), function(x) 
+		  perc_missing = signif(sapply(1:ncol(tsdata), function(x) 
 		    sum(is.na(tsdata[,x]))/length(tsdata[,x])), digits=3)	   
 		  if(any(perc_missing > 0)){
 		    text((xmax-xmin)*0.5,y=(ymin + (ymax-ymin)*(y_adj+0.42)),
