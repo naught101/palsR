@@ -28,20 +28,20 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 				data_smooth[i,p] = mean(data_days[i:(i+winsize-1),],na.rm=na.rm)
 			}
 			if(p==1){
-				yvalmin = as.character(signif(min(tsdata[,p],na.rm=na.rm),3))
-				yvalmax = as.character(signif(max(tsdata[,p],na.rm=na.rm),3))
-				datamean = as.character(signif(mean(tsdata[,p],na.rm=na.rm),3))
-				datasd = as.character(signif(sd(tsdata[,p],na.rm=na.rm),3))
+				yvalmin = as.character(round(min(tsdata[,p],na.rm=na.rm),3))
+				yvalmax = as.character(round(max(tsdata[,p],na.rm=na.rm),3))
+				datamean = as.character(round(mean(tsdata[,p],na.rm=na.rm),3))
+				datasd = as.character(round(sd(tsdata[,p],na.rm=na.rm),3))
 
 			}else{
-				yvalmin = paste(yvalmin,', ',as.character(signif(min(tsdata[,p],na.rm=na.rm),3)),sep='')
-				yvalmax = paste(yvalmax,', ',as.character(signif(max(tsdata[,p],na.rm=na.rm),3)),sep='')
-				datamean = paste(datamean,', ',as.character(signif(mean(tsdata[,p],na.rm=na.rm),3)),sep='')
-				datasd = paste(datasd,', ',as.character(signif(sd(tsdata[,p]),3),na.rm=na.rm),sep='')
+				yvalmin = paste(yvalmin,', ',as.character(round(min(tsdata[,p],na.rm=na.rm),3)),sep='')
+				yvalmax = paste(yvalmax,', ',as.character(round(max(tsdata[,p],na.rm=na.rm),3)),sep='')
+				datamean = paste(datamean,', ',as.character(round(mean(tsdata[,p],na.rm=na.rm),3)),sep='')
+				datasd = paste(datasd,', ',as.character(round(sd(tsdata[,p]),3),na.rm=na.rm),sep='')
 			}
 		}
-		ymin = signif(min(data_smooth,na.rm=na.rm),3)
-		ymax = signif(max(data_smooth,na.rm=na.rm),3)
+		ymin = round(min(data_smooth,na.rm=na.rm),3)
+		ymax = round(max(data_smooth,na.rm=na.rm),3)
 		# If we're adding a gap-filling QC line, make space for it:
 		if(vqcdata[1,1] != -1) {
 			ymin = ymin - (ymax-ymin)*0.06
@@ -165,15 +165,22 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 		}		
 	}else{
 		# this code not functioning but kept for future modification:
-		yvalmin = signif(min(tsdata),3)
-		yvalmax = signif(max(tsdata),3)
-		datamean = signif(mean(tsdata[,1]),3)
-		datasd = signif(sd(tsdata[,1]),3)
+		yvalmin = round(min(tsdata, na.rm=na.rm),3)
+		yvalmax = round(max(tsdata, na.rm=na.rm),3)
+		datamean = round(mean(tsdata[,1], na.rm=na.rm),3)
+		datasd = round(sd(tsdata[,1], na.rm=na.rm),3)
 		ymin = yvalmin
 		ymax = yvalmax
 		xmin = 1
 		xmax = ntsteps
 		xloc=c(1:xmax)
+		y_adj=1
+		#If ignoring NA, make space for printing % missing
+		#Also shift other labels and legend down in this case
+		if(na.rm){
+		  ymax=ymax*1.1
+		  y_adj = 0.94
+		}
 		plot(xloc,tsdata[,1],type="l",ylab=ytext,lwd=3,
 		     col=plotcolours[1],ylim=c(ymin,(ymin + (ymax-ymin)*1.3)),
 		     xaxt='n',cex.lab=plotcex,cex.axis=plotcex,xlab='')
@@ -183,7 +190,7 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 		dayssmooth = 30
 		for(i in 1:(ndays-dayssmooth-1)){
 			# Find evaporative fraction using averaging window:
-			data_smooth[i] = mean(data_days[i:(i+dayssmooth-1),])
+			data_smooth[i] = mean(data_days[i:(i+dayssmooth-1),], na.rm=na.rm)
 		}
 		xct = c(1:(ndays-dayssmooth-1))
 		xsmooth = xct*tstepinday + (tstepinday*dayssmooth / 2 - tstepinday)
@@ -200,12 +207,12 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 			xxlab[(2*l-1)]=paste('1 Jan',substr(as.character(timing$syear+l-1),3,4))
 			xxlab[(2*l)]=paste('1 Jul',substr(as.character(timing$syear+l-1),3,4))
 		}
-		legend(0-(xmax-xmin)*0.05,(ymin + (ymax-ymin)*1.42),legend=legendtext[1:ncurves],lty=1,
+		legend(0-(xmax-xmin)*0.05,(ymin + (ymax-ymin)*(y_adj+0.42)),legend=legendtext[1:ncurves],lty=1,
 		       col=plotcolours[1:ncurves],lwd=3,bty="n",cex=max((plotcex*0.75),1))
 		title(paste(obslabel,varname[1]),cex.main=plotcex)
 		# Locations of max,min,mean,sd text:
 		stattextx = c(xmin,xmin+(xmax-xmin)*0.5)
-		stattexty = c(ymin + (ymax-ymin)*1.18,ymin + (ymax-ymin)*1.24)
+		stattexty = c(ymin + (ymax-ymin)*(y_adj+0.18),ymin + (ymax-ymin)*(y_adj+0.24))
 		# Write max,min,mean,sd to plot in two lines:
 		text(x=stattextx,y=stattexty[2],
 		     labels=c(paste('Min = ',ymin,sep=''),paste('Max = ',ymax,sep='')),
@@ -213,11 +220,20 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 		text(x=stattextx,y=stattexty[1],
 		     labels=c(paste('Mean = ',datamean,sep=''),paste('SD = ',datasd,sep='')),
 		     cex=max((plotcex*0.75),1),pos=4)
+		#Print percentage of data missing if na.rm=TRUE and some data missing
+		if(na.rm){
+		  perc_missing = round(sapply(1:ncol(tsdata), function(x) 
+		    sum(is.na(tsdata[,x]))/length(tsdata[,x])), digits=3)	   
+		  if(any(perc_missing > 0)){
+		    text((xmax-xmin)*0.5,y=(ymin + (ymax-ymin)*(y_adj+0.42)),
+		         paste("(",paste(perc_missing,collapse=", "), ")% data missing", sep=""),
+		         pos=1,offset=1, col="red")
+		  }
 		# Calculate QC time series information, if it exists:
 		if(vqcdata[1,1] != -1){
-			qcliney = ymin + (ymax-ymin)*1.04 # y-location of qc line
-			qctexty = ymin + (ymax-ymin)*1.09 # y-location of qc text
-			qcpc = signif((1-mean(vqcdata[,1]))*100,2) # % of data that's gapfilled
+			qcliney = ymin + (ymax-ymin)*(y_adj+0.04) # y-location of qc line
+			qctexty = ymin + (ymax-ymin)*(y_adj+0.09) # y-location of qc text
+			qcpc = signif((1-mean(vqcdata[,1], na.rm=TRUE))*100,2) # % of data that's gapfilled
 			# Construct line-plottable version of qc timeseries:
 			origline =	qcliney/(vqcdata[,1]) # 0s will become 'Inf'
 			gapline = (qcliney/(vqcdata[,1]-1))*-1 # 1s will become 'Inf'
@@ -232,3 +248,6 @@ Timeseries = function(obslabel,tsdata,varname,ytext,legendtext,
 	result = list(err=FALSE,errtext = errtext,metrics=metrics)
 	return(result)
 }
+}
+
+
