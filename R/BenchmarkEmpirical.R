@@ -81,8 +81,8 @@ GenerateEmpBenchmark = function(TrainPathsMet,TrainPathsFlux,PredictPathMet,Pred
 		ncatt_put(ncid,varid=0,attname='Out-of-sample',
  			attval=paste(DataSetName,'data was NOT used in training regression parameters for this prediction.'))
 	}
-	ncatt_put(ncid,varid=0,attname='PALS_dataset_name',attval=DataSetName)
-	ncatt_put(ncid,varid=0,attname='PALS_dataset_version',attval=DataSetVersion)
+	ncatt_put(ncid,varid=0,attname='PALS_dataset_name',attval=DataSetName$value)
+	ncatt_put(ncid,varid=0,attname='PALS_dataset_version',attval=DataSetVersion$value)
 	ncatt_put(ncid,varid=0,attname='Contact',attval='palshelp@gmail.com')
 	# Add time-independent variable data to file:
 	ncvar_put(ncid,'latitude',vals=Lat)
@@ -94,7 +94,7 @@ GenerateEmpBenchmark = function(TrainPathsMet,TrainPathsFlux,PredictPathMet,Pred
 		cat('Training benchmark',binfo$type,' for variable:',varnames[v],'\n')
 		# Establish empirical model parameters on training data sets:
 		trainedmodel = TrainEmpModel(ntrainsites,TrainPaths,binfo$x,varnames[v],
-			binfo$par[b],binfo$type[b],removeflagged=removeflagged)
+			binfo$par,binfo$type,removeflagged=removeflagged)
 		# Use those parameters to make a prediction:
 		cat('...Predicting using benchmark \n')
 		empprediction = PredictEmpFlux(PredictPathMet,binfo$x,
@@ -190,15 +190,14 @@ TrainEmpModel = function(nsites,infiles,xvarnames,yvarname,
 		# Get independent variables:
 		for(v in 1:nxvars){
 			# If we're using humidity as a benchmark input, change to relative humidity:
-			if(xvarnames[v] != 'Qair'){
-				tmpx = GetFluxnetVariable(xvarnames[v],metfiles[s],'blah')
-				xvar[(dstart[s]:dend[s]),v] = tmpx$data
-				
-			}else{
-				tmpx = GetFluxnetVariable(xvarnames[v],metfiles[s],'blah')
-				tmpTair = GetFluxnetVariable('Tair',metfiles[s],'blah')
-				tmpPSurf = GetFluxnetVariable('PSurf',metfiles[s],'blah')
+			if(xvarnames[v] == 'Qair'){
+				tmpx = GetFluxnetVariable(xvarnames[v],'blah',metfiles[s])
+				tmpTair = GetFluxnetVariable('Tair','blah',metfiles[s])
+				tmpPSurf = GetFluxnetVariable('PSurf','blah',metfiles[s])
 				xvar[(dstart[s]:dend[s]),v] = Spec2RelHum(tmpx$data,tmpTair$data,tmpPSurf$data)
+			}else{
+				tmpx = GetFluxnetVariable(xvarnames[v],'blah',metfiles[s])
+				xvar[(dstart[s]:dend[s]),v] = tmpx$data
 			}
 			if(removeflagged & tmpx$qcexists){
 				xvar_qc[(dstart[s]:dend[s]),v] = tmpx$qc
@@ -207,7 +206,7 @@ TrainEmpModel = function(nsites,infiles,xvarnames,yvarname,
 				xvar_qc[(dstart[s]:dend[s]),v] = 1
 			}
 		}
-		tmpy = GetFluxnetVariable(yvarname,fluxfiles[s],'blah')
+		tmpy = GetFluxnetVariable(yvarname,'blah',fluxfiles[s])
 		yvar = c(yvar,tmpy$data)
 		if(removeflagged & tmpy$qcexists){
 			yvar_qc = c(yvar_qc,tmpy$qc)
@@ -296,14 +295,14 @@ PredictEmpFlux = function(infile,xvarnames,yvarname,emod){
 	xvar = matrix(NA,ntsteps,nxvars) # declare x var data matrix
 	# Get test site dependent variable data:
 	for(v in 1:nxvars){
-		if(xvarnames[v] != 'Qair'){
-			tmpx = GetFluxnetVariable(xvarnames[v],infile,'blah')
-			xvar[,v] = tmpx$data
-		}else{
-			tmpx = GetFluxnetVariable(xvarnames[v],infile,'blah')
-			tmpTair = GetFluxnetVariable('Tair',infile,'blah')
-			tmpPSurf = GetFluxnetVariable('PSurf',infile,'blah')
+		if(xvarnames[v] == 'Qair'){
+			tmpx = GetFluxnetVariable(xvarnames[v],'blah',infile)
+			tmpTair = GetFluxnetVariable('Tair','blah',infile)
+			tmpPSurf = GetFluxnetVariable('PSurf','blah',infile)
 			xvar[,v] = Spec2RelHum(tmpx$data,tmpTair$data,tmpPSurf$data)
+		}else{
+			tmpx = GetFluxnetVariable(xvarnames[v],'blah',infile)
+			xvar[,v] = tmpx$data
 		}		
 	}
 	if(emod$type=='kmeans'){

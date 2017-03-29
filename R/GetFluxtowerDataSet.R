@@ -21,18 +21,18 @@ GetFluxnetVariable = function(variable,name,filepath,flagonly=FALSE){
 	# Open observed data file:
 	fid=nc_open(filepath,write=FALSE,readunlim=FALSE)
 	# Check required variable exists:
-	vexists = NcvarExists(fid,variable[['Name']][1])
+	vexists = NcvarExists(fid,variable)
 	# If not, return with error:
 	if(! vexists$var){
 		dsetname = ncatt_get(fid,varid=0,attname='PALS_dataset_name')
 		if(dsetname$hasatt){
-			errtext = paste('DS2: Variable ',variable[['Name']][1],
+			errtext = paste('DS2: Variable ',variable,
 				' does not exist in data set ',name,sep='')
 			obs=list(errtext=errtext,exists=FALSE,qcexists=FALSE,err=TRUE)
 			fid = nc_close(fid)
 			return(obs)
 		}else{
-			errtest = paste('DS2: Variable ',variable[['Name']][1],
+			errtest = paste('DS2: Variable ',variable,
 				'does not exist in data set',name,sep='')
 			obs=list(errtext=errtext,exists=FALSE,err=TRUE,qcexists=FALSE)
 			fid = nc_close(fid)
@@ -41,11 +41,11 @@ GetFluxnetVariable = function(variable,name,filepath,flagonly=FALSE){
 	}
 	# Read QC data if it exists:
 	if(vexists$qc){
-		qc=ncvar_get(fid,paste(variable[['Name']][1],'_qc',sep=''))
+		qc=ncvar_get(fid,paste(variable,'_qc',sep=''))
 	}
 	if(! flagonly){ # if this function call is actually about fetching data:
 		timing = GetTimingNcfile(fid)
-		data=ncvar_get(fid,variable[['Name']][1])   # read observed variable data
+		data=ncvar_get(fid,variable)   # read observed variable data
 		grid = GetGrid(fid)
 		obs=list(data=data,timing=timing,qc=qc,qcexists=vexists$qc,name=name,
 			grid=grid,err=FALSE,errtext=errtext)
